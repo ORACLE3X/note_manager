@@ -3,13 +3,12 @@ const app =require("./app");
 const router = require("./route");
 const dotenv = require("dotenv");
 dotenv.config();
-const PORT = 50001;
 app.use("/api/v1", router)
 
 app.use((err, req, res , next) =>{
     res.status(err.status || 500).json({error: err.message})
 })
-app.listen(PORT,()=>{
+app.listen(process.env.PORT,()=>{
     try{
         console.log("connecting to database ...");
         //connect to database
