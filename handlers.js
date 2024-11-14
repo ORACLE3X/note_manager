@@ -7,11 +7,13 @@ const { default: mongoose } = require("mongoose");
 const NoteModel = require("./note.model");
 exports.creatUser= async(req,res,next)=>{
     try{
-        const{name, track, gender}=req.body;
+        const{name, track, gender, email, password}=req.body;
         //data validation
         if(!name)return next (APIError.badRequest("Name is required"));
         if(!track)return next (APIError.badRequest("Track is required"));
         if(!gender)return next (APIError.badRequest("Gender is required"));
+        if(!email)return next (APIError.badRequest("Email is required"));
+        if(!password)return next (APIError.badRequest("Password is required"));
         if(gender!=="male" && gender !=="female") throw new Error("invalid gender");
      const createdAt = Date.now();
     const newUser = {

@@ -12,7 +12,20 @@ const AccountSchema = new Schema ({
     },
     track:{
         type: String,
-    }
+    },
+    email:{
+        type: String,
+        required : true,
+        trim : true,  
+    },
+    password:{
+        type :String,
+        required : true ,
+        trim : true,
+    },
+    refreshToken :{
+        type :[]
+    },
 },
  {timestamps: true}
 );
