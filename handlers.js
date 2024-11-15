@@ -5,6 +5,7 @@ const { APIError } = require("./apiError");
 const AccountModel = require("./Account.models");
 const { default: mongoose } = require("mongoose");
 const NoteModel = require("./note.model");
+const { hashSync } = require("bcryptjs");
 exports.creatUser= async(req,res,next)=>{
     try{
         const{name, track, gender, email, password}=req.body;
@@ -15,15 +16,18 @@ exports.creatUser= async(req,res,next)=>{
         if(!email)return next (APIError.badRequest("Email is required"));
         if(!password)return next (APIError.badRequest("Password is required"));
         if(gender!=="male" && gender !=="female") throw new Error("invalid gender");
-     const createdAt = Date.now();
+        if(password.length < 8)return next (APIError.badRequest("invalid password length"));
+        const hashedPassword = hashSync(password, 10);
     const newUser = {
     name,
     gender,
     track,
+    email,
+    password:hashedPassword,
     // createdAt,
     // updatedAt: createdAt,
     // id:uuidv4(),
-    }
+    };
     const createAccount = await AccountModel.create({...newUser})
     // if(fs.existsSync("account.json")){
     // fs.readFile("account.json", "utf-8",(err, data)=>{
