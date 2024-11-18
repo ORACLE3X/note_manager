@@ -9,7 +9,8 @@ exports.login= async (req, res, next )=>{
         if(!password) return next (APIError.badRequest("Password is required"));
         const userExist = await AccountModel.findOne({email});
         if(!userExist) return next (APIError.notFound("Account does not exist"));
-        if(!compareSync(userExist.password, password)) return next (APIError.badRequest("Incorrect password"));
+        if(!compareSync(password,userExist.password)) return next (APIError.badRequest("Incorrect password"));
+        res.status(201).json({message : " Login sucessful"});
     } catch (error) {
         next(error);
     }
