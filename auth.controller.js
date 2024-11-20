@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv").config();
 exports.login= async (req, res, next )=>{
     try {
+
+        
         const {email, password}= req.body;
         if(!email) return next(APIError.badRequest("Email is required"));
         if(!password) return next (APIError.badRequest("Password is required"));
@@ -12,7 +14,7 @@ exports.login= async (req, res, next )=>{
         // console.log(userExist);
         if(!userExist) return next (APIError.notFound("Account does not exist"));
         if(!compareSync(password,userExist.password)) return next (APIError.badRequest("Incorrect password"));
-        const accessToken = jwt.sign({id:userExist._id, email:userExist.email}, process.env.ACESS_TOKEN_SECRET,{expiresIn:"30s"});
+        const accessToken = jwt.sign({id:userExist._id, email:userExist.email}, process.env.ACESS_TOKEN_SECRET,{expiresIn:"1m"});
         // console.log(acessToken);
         const refreshToken = jwt.sign({id:userExist._id, email:userExist.email}, process.env.REFRESH_TOKEN_SECRET,{expiresIn: "5m"});
         userExist.refreshToken = refreshToken;
@@ -20,9 +22,23 @@ exports.login= async (req, res, next )=>{
         res.clearCookie("note_app")
         res.cookie("note_app", accessToken, {
             httpOnly : false,
+            secure: false,
             sameSite: "none",
         })
         res.status(200).json({messge: "Login sucessfull",accessToken, refreshToken})
+    } catch (error) {
+        next(error);
+    }
+};
+exports.logout = async (req, res, next )=>{
+    try {
+        const userExist = await AccountModel.findOne({email: req.email});
+        // console.log(userExist);
+        if(!userExist) return next (APIError.notFound("Account does not exist"));
+        userExist.refreshToken = [];
+        userExist.save();
+        res.clearCookie("note_app")
+        res.status(200).json({messge: "Logout sucessfull"})
     } catch (error) {
         next(error);
     }

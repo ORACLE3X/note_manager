@@ -53,6 +53,7 @@ exports.creatUser= async(req,res,next)=>{
 
 exports.getAccounts= async(req,res) => {
     try{
+        // console.log(req.userId);
         const account = await AccountModel.find({}).select("-__v")
             if(!account || account.length === 0 )
                 return  res.status(404).json({message:"No record found"})
@@ -157,17 +158,17 @@ exports.updateAccount = async (req,res,next)=>{
     
     exports.createNote = async(req, res, next)=>{ 
         try {
-            const {accountId, title, text}= req.body;
-            if(!accountId) return next(APIError.badRequest("Account ID is required"));
+            const { title, text}= req.body;
+            // if(!accountId) return next(APIError.badRequest("Account ID is required"));?
             if(!title) return next (APIError.badRequest("Title is required"));
             if(!text) return next(APIError.badRequest("Text is required"));
             const createdAt = Date.now;
             const newNote ={
                 title,
                 text,
-               account:accountId,
+               account:req.userId
             }
-            const userExist = await AccountModel.findById(accountId);
+            const userExist = await AccountModel.findById(req.userId);
             if (!userExist) return next (APIError.badRequest("Invalid Account ID"));
             const createNote = await NoteModel.create({...newNote})
             // if (fs.existsSync("note.json")) {
