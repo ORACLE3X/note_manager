@@ -5,6 +5,7 @@ const { APIError } = require("./apiError");
 const AccountModel = require("./Account.models");
 const { default: mongoose } = require("mongoose");
 const NoteModel = require("./note.model");
+const { hashSync } = require("bcryptjs");
 exports.creatUser= async(req,res,next)=>{
     try{
         const{name, track, gender, email, password}=req.body;
@@ -15,15 +16,18 @@ exports.creatUser= async(req,res,next)=>{
         if(!email)return next (APIError.badRequest("Email is required"));
         if(!password)return next (APIError.badRequest("Password is required"));
         if(gender!=="male" && gender !=="female") throw new Error("invalid gender");
-     const createdAt = Date.now();
+        if(password.length < 8)return next (APIError.badRequest("invalid password length"));
+        const hashedPassword = hashSync(password, 10);
     const newUser = {
     name,
     gender,
     track,
+    email,
+    password:hashedPassword,
     // createdAt,
     // updatedAt: createdAt,
     // id:uuidv4(),
-    }
+    };
     const createAccount = await AccountModel.create({...newUser})
     // if(fs.existsSync("account.json")){
     // fs.readFile("account.json", "utf-8",(err, data)=>{
@@ -49,6 +53,7 @@ exports.creatUser= async(req,res,next)=>{
 
 exports.getAccounts= async(req,res) => {
     try{
+        // console.log(req.userId);
         const account = await AccountModel.find({}).select("-__v")
             if(!account || account.length === 0 )
                 return  res.status(404).json({message:"No record found"})
@@ -153,17 +158,17 @@ exports.updateAccount = async (req,res,next)=>{
     
     exports.createNote = async(req, res, next)=>{ 
         try {
-            const {accountId, title, text}= req.body;
-            if(!accountId) return next(APIError.badRequest("Account ID is required"));
+            const { title, text}= req.body;
+            // if(!accountId) return next(APIError.badRequest("Account ID is required"));?
             if(!title) return next (APIError.badRequest("Title is required"));
             if(!text) return next(APIError.badRequest("Text is required"));
             const createdAt = Date.now;
             const newNote ={
                 title,
                 text,
-               account:accountId,
+               account:req.userId
             }
-            const userExist = await AccountModel.findById(accountId);
+            const userExist = await AccountModel.findById(req.userId);
             if (!userExist) return next (APIError.badRequest("Invalid Account ID"));
             const createNote = await NoteModel.create({...newNote})
             // if (fs.existsSync("note.json")) {
