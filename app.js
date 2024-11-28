@@ -1,7 +1,7 @@
 const express =require("express");
 const app=express();
 const cors = require("cors")
-let whitelist = ['http://example1.com']
+let whitelist = ['http://127.0.0.1:5500', 'https://note-manager-frontend.vercel.app/']
 app.use(cors({
     origin: function (origin, callback) {
       if (whitelist.indexOf(origin) !== -1) {
