@@ -1,5 +1,6 @@
 const express =require("express");
 const app=express();
+const bodyParser = require('body-parser');
 const cors = require("cors")
 let whitelist = ['http://127.0.0.1:5500', 'https://note-manager-frontend.vercel.app']
 app.use(cors({
@@ -14,6 +15,7 @@ app.use(cors({
 );
 app.use(express.urlencoded({extended:true}));
 app.use(express.json());
+app.use(bodyParser.json())
 
 app.get("/api/v1/status",(req,res)=>{
     try{

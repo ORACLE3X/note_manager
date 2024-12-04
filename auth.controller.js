@@ -29,7 +29,7 @@ exports.login= async (req, res, next )=>{
             secure: false,
             sameSite: "none",
         })
-        res.status(200).json({messge: "Login sucessfull",accessToken, refreshToken});
+        res.status(200).json({message: "Login sucessfull",accessToken, refreshToken});
     } catch (error) {
         next(error);
     }
