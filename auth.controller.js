@@ -18,9 +18,9 @@ exports.login= async (req, res, next )=>{
         // console.log(userExist);
         if(!userExist) return next (APIError.notFound("Account does not exist"));
         if(!compareSync(password,userExist.password)) return next (APIError.badRequest("Incorrect password"));
-        const accessToken = jwt.sign({id:userExist._id, email:userExist.email}, process.env.ACESS_TOKEN_SECRET,{expiresIn:"1m"});
+        const accessToken = jwt.sign({id:userExist._id, email:userExist.email}, process.env.ACESS_TOKEN_SECRET,{expiresIn:"10m"});
         // console.log(acessToken);
-        const refreshToken = jwt.sign({id:userExist._id, email:userExist.email}, process.env.REFRESH_TOKEN_SECRET,{expiresIn: "5m"});
+        const refreshToken = jwt.sign({id:userExist._id, email:userExist.email}, process.env.REFRESH_TOKEN_SECRET,{expiresIn: "30m"});
         userExist.refreshToken = refreshToken;
         userExist.save();
         res.clearCookie("note_app");
