@@ -18,9 +18,9 @@ exports.login= async (req, res, next )=>{
         // console.log(userExist);
         if(!userExist) return next (APIError.notFound("Account does not exist"));
         if(!compareSync(password,userExist.password)) return next (APIError.badRequest("Incorrect password"));
-        const accessToken = jwt.sign({id:userExist._id, email:userExist.email}, process.env.ACESS_TOKEN_SECRET,{expiresIn:"10m"});
+        const accessToken = jwt.sign({id:userExist._id, email:userExist.email}, process.env.ACESS_TOKEN_SECRET,{expiresIn:"1m"});
         // console.log(acessToken);
-        const refreshToken = jwt.sign({id:userExist._id, email:userExist.email}, process.env.REFRESH_TOKEN_SECRET,{expiresIn: "30m"});
+        const refreshToken = jwt.sign({id:userExist._id, email:userExist.email}, process.env.REFRESH_TOKEN_SECRET,{expiresIn: "2m"});
         userExist.refreshToken = refreshToken;
         userExist.save();
         res.clearCookie("note_app");
@@ -29,7 +29,7 @@ exports.login= async (req, res, next )=>{
             secure: false,
             sameSite: "none",
         })
-        res.status(200).json({message: "Login sucessfull",accessToken, refreshToken});
+        res.status(200).json({message: "Login sucessfull",name:userExist.name, accessToken, refreshToken});
     } catch (error) {
         next(error);
     }
@@ -63,10 +63,9 @@ exports.refreshToken = async (req, res , next)=>{
     try {
         let token = req.headers?.cookie?.split("=")[1]; 
         if(!token) token = req.headers.authorization?.split(" ")[1];
-        let {refreshToken} = req.body;
+        const {refreshToken} = req.body;
         if(!refreshToken) return next (APIError.badRequest("Refresh token is required"));
         const found = await AccountModel.findOne({refreshToken});
-        console.log(found);
         if(!found){
             jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decode) =>{
                 if (err){
@@ -78,19 +77,20 @@ exports.refreshToken = async (req, res , next)=>{
             })
             return res.status(403).json({message : " Login to have access"})
         }
-        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decode) =>{
+        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, decode) =>{
             if (err){
-                const user = AccountModel.findOne({_id: decode.id});
-                user.refreshToken = [];
-                user.save();
-
+                const user =  await AccountModel.findOne({_id: decode?.id});
+                if(user){
+                    user.refreshToken = [];
+                    user.save();
+                }
                 return res.status(403).json({message : " Login to have access"})
             }
         })
          
-        const accessToken = jwt.sign({id:found._id, email:found.email}, process.env.ACESS_TOKEN_SECRET,{expiresIn:"5m"});
+        const accessToken = jwt.sign({id:found._id, email:found.email}, process.env.ACESS_TOKEN_SECRET,{expiresIn:"1m"});
         // console.log(acessToken);
-        const newRefreshToken = jwt.sign({id:found._id, email:found.email}, process.env.REFRESH_TOKEN_SECRET,{expiresIn: "10m"});
+        const newRefreshToken = jwt.sign({id:found._id, email:found.email}, process.env.REFRESH_TOKEN_SECRET,{expiresIn: "2m"});
         found.refreshToken = newRefreshToken;
         found.save();
         res.clearCookie("note_app");
@@ -99,8 +99,9 @@ exports.refreshToken = async (req, res , next)=>{
             secure: false,
             sameSite: "none",
         })
-        res.status(200).json({messge: "Token created",accessToken, refreshToken:newRefreshToken});
+        res.status(200).json({message: "Token created",accessToken, refreshToken:newRefreshToken});
     } catch (error) {
+        console.log(error)
         next(error);
     }
 }

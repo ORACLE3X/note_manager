@@ -1,8 +1,9 @@
 const express =require("express");
-const app=express();
-const bodyParser = require('body-parser');
+const app = express();
+// const bodyParser = require('body-parser');
 const cors = require("cors")
-let whitelist = ['http://127.0.0.1:5500', 'https://note-manager-frontend.vercel.app']
+const whitelist = ['http://127.0.0.1:5500', 'https://note-manager-frontend.vercel.app']
+
 app.use(cors({
     origin: function (origin, callback) {
       if (whitelist.indexOf(origin) !== -1) {
@@ -11,11 +12,10 @@ app.use(cors({
         callback(new Error('Not allowed by CORS'))
       }
     }
-  })
-);
+  }));
 app.use(express.urlencoded({extended:true}));
 app.use(express.json());
-app.use(bodyParser.json())
+// app.use(bodyParser.json())
 
 app.get("/api/v1/status",(req,res)=>{
     try{
